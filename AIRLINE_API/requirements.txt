@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+Flask-JWT-Extended
+flasgger
+
+psycopg2-binary
+gunicorn

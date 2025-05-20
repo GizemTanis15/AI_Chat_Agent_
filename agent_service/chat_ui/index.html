@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Chat Agent</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --container-bg: #ffffff;
+      --chat-bg: #f9f9f9;
+      --user-msg: #dcf8c6;
+      --bot-msg: #ffffff;
+      --bot-border: #e0e0e0;
+      --text-color: #000;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1f1f1f;
+      --container-bg: #2c2c2c;
+      --chat-bg: #1f1f1f;
+      --user-msg: #3a3d40;
+      --bot-msg: #2a2a2a;
+      --bot-border: #444;
+      --text-color: #f0f0f0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: var(--container-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      height: 85vh;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .header {
+      padding: 20px;
+      font-size: 1.6em;
+      font-weight: bold;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      font-size: 1.5em;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: var(--chat-bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin-bottom: 18px;
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+      white-space: pre-line;
+      position: relative;
+    }
+
+    .user {
+      background-color: var(--user-msg);
+      align-self: flex-end;
+      text-align: right;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      background-color: var(--bot-msg);
+      border: 1px solid var(--bot-border);
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+    }
+
+    .timestamp {
+      font-size: 0.75em;
+      opacity: 0.6;
+      margin-top: 4px;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 20px;
+      border-top: 1px solid #ccc;
+      background-color: var(--container-bg);
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-right: 10px;
+    }
+
+    .input-area button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .input-area button:hover {
+      background-color: #0056b3;
+    }
+
+    .typing {
+      font-style: italic;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<!-- Firebase SDK -->
+<script type="module">
+  // Firebase modüllerini yükle
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCVbNdLa_IUr15Fdj_5bgX2-K0t7RlPSgc",
+    authDomain: "ai-chat-agent-ce63e.firebaseapp.com",
+    projectId: "ai-chat-agent-ce63e",
+    storageBucket: "ai-chat-agent-ce63e.firebasestorage.app",
+    messagingSenderId: "975964774962",
+    appId: "1:975964774962:web:7aed4166f74e7eea53122b",
+    measurementId: "G-YXB53NWW3L"
+  };
+
+  // Firebase'i başlat
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Geçmiş mesajları getir ve göster
+  window.loadHistory = async function () {
+    const messagesDiv = document.getElementById('messages');
+    try {
+      const snapshot = await getDocs(collection(db, "messages"));
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ' + (data.sender === 'user' ? 'user' : 'bot');
+        msgDiv.innerHTML = `<div>${data.content}</div><div class="timestamp">${new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>`;
+        messagesDiv.appendChild(msgDiv);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (error) {
+      console.error("Geçmiş yüklenemedi:", error);
+    }
+  };
+</script>
+<body data-theme="light">
+  <div class="container">
+    <div class="header">
+      🛫 AI Chat Agent
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">🌗</button>
+    </div>
+    <div class="chat-box" id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="message" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Sayfa yüklendiğinde geçmişi yükle
+    window.onload = loadHistory;
+
+
+
+    function toggleTheme() {
+      const current = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+    }
+
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function sendMessage() {
+      const msgInput = document.getElementById('message');
+      const msg = msgInput.value.trim();
+      if (!msg) return;
+
+      const messagesDiv = document.getElementById('messages');
+
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerHTML = `<div>${msg}</div><div class="timestamp">${formatTime()}</div>`;
+      messagesDiv.appendChild(userMsg);
+
+      const typingMsg = document.createElement('div');
+      typingMsg.className = 'message bot typing';
+      typingMsg.innerHTML = `<div>Typing...</div>`;
+      messagesDiv.appendChild(typingMsg);
+
+      msgInput.value = '';
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      try {
+        const response = await fetch('http://localhost:5001/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+
+        const result = await response.json();
+        typingMsg.remove();
+
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message bot';
+        const replyText = result.reply || result.message || result.error || JSON.stringify(result);
+        botMsg.innerHTML = `<div>${replyText}</div><div class="timestamp">${formatTime()}</div>`;
+        messagesDiv.appendChild(botMsg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      } catch (err) {
+        typingMsg.remove();
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'message bot';
+        errorMsg.innerHTML = `<div>❌ Error: ${err.message}</div><div class="timestamp">${formatTime()}</div>`;
+        messagesDiv.appendChild(errorMsg);
+      }
+    }
+  </script>
+</body>
+</html>
