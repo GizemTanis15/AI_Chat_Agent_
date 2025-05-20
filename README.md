@@ -99,4 +99,5 @@ firebase_key.json İçeriği:
 }
 firebase_key.json dosyası agent_service klasörü içerisine yerleştirilmelidir.
 
-
+Below is the YouTube link of the assignment where I explained this assignment.
+https://youtu.be/YanqBoPI5_M
