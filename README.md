@@ -66,6 +66,9 @@ python app.py
 
 6. Open frontend:
 Open frontend/index.html in a browser.
+WEB LİNK :
+https://gizemtanis15.github.io/ai-chat-agent-frontend/
+This link provides direct access to the user interface (chat screen) of the project. It also displays past messages retrieved from Firebase Firestore.
 
 Önemli Notlar
 Bu projede güvenlik nedeniyle .env ve firebase_key.json gibi hassas dosyalar .gitignore dosyası aracılığıyla versiyon kontrolüne dahil edilmemiştir.
